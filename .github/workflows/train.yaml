@@ -32,26 +32,26 @@ jobs:
           path: ${{ matrix.repo }}
       - name: Echo app and org
         run: echo "Checked out ${{ matrix.org }}/${{ matrix.repo }}"
-      - name: Save repo/org info for summary
-        run: |
-          echo "| ${{ matrix.org }} | ${{ matrix.repo }} |" >> repos.txt
+      - name: Save summary info
+        run: echo "| ${{ matrix.org }} | ${{ matrix.app }} |" > summary.txt
       - name: Upload summary artifact
         uses: actions/upload-artifact@v4
         with:
-          name: repos-summary
-          path: repos.txt
+          name: summary-${{ matrix.app }}
+          path: summary.txt
 
   summary-table:
     needs: echo-matrix
     runs-on: ubuntu-latest
     steps:
-      - name: Download summary artifact
+      - name: Download all summary artifacts
         uses: actions/download-artifact@v4
         with:
-          name: repos-summary
-      - name: Print summary table
+          pattern: summary-*
+          path: summaries
+      - name: Create summary table
         run: |
           echo "### Repository Summary" >> $GITHUB_STEP_SUMMARY
           echo "| Org | Repo |" >> $GITHUB_STEP_SUMMARY
           echo "|-----|------|" >> $GITHUB_STEP_SUMMARY
-          cat repos.txt >> $GITHUB_STEP_SUMMARY
+          cat summaries/summary-*/summary.txt >> $GITHUB_STEP_SUMMARY
