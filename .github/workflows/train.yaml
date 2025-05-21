@@ -13,7 +13,7 @@ jobs:
         id: set-matrix
         run: |
           # Example: dynamically generate the app list (replace with your logic)
-          apps='["applications-specs","another-app","third-app"]'
+          apps='["test-argocd","ci-cd-diff-tools"]'
           echo "app_list=$apps" >> $GITHUB_OUTPUT
 
   echo-matrix:
@@ -23,5 +23,10 @@ jobs:
       matrix:
         app: ${{ fromJson(needs.prepare-matrix.outputs.app_list) }}
     steps:
+      - name: Checkout ${{ matrix.app }} repository
+        uses: actions/checkout@v4
+        with:
+          repository: shurikg/${{ matrix.app }}
+          path: ${{ matrix.app }}
       - name: Echo app name
-        run: echo "Processing ${{ matrix.app }}"
+        run: echo "Checked out ${{ matrix.app }}"
