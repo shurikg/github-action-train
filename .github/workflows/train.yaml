@@ -4,14 +4,24 @@ on:
   workflow_dispatch:
 
 jobs:
+  prepare-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      app_list: ${{ steps.set-matrix.outputs.app_list }}
+    steps:
+      - name: Calculate apps on the fly
+        id: set-matrix
+        run: |
+          # Example: dynamically generate the app list (replace with your logic)
+          apps='["applications-specs","another-app","third-app"]'
+          echo "app_list=$apps" >> $GITHUB_OUTPUT
+
   echo-matrix:
+    needs: prepare-matrix
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        app:
-          - applications-specs
-          - another-app
-          - third-app
+        app: ${{ fromJson(needs.prepare-matrix.outputs.app_list) }}
     steps:
       - name: Echo app name
         run: echo "Processing ${{ matrix.app }}"
