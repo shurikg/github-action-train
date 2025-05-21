@@ -9,11 +9,11 @@ jobs:
     outputs:
       app_list: ${{ steps.set-matrix.outputs.app_list }}
     steps:
-      - name: Calculate apps on the fly
+      - name: Calculate apps and orgs on the fly
         id: set-matrix
         run: |
-          # Example: dynamically generate the app list (replace with your logic)
-          apps='["test-argocd","ci-cd-diff-tools"]'
+          # Example: dynamically generate the app/org map (replace with your logic)
+          apps='[{"org":"shurikg","repo":"test-argocd"},{"org":"shurikg","repo":"ci-cd-diff-tools"}]'
           echo "app_list=$apps" >> $GITHUB_OUTPUT
 
   echo-matrix:
@@ -21,12 +21,37 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        app: ${{ fromJson(needs.prepare-matrix.outputs.app_list) }}
+        include: ${{ fromJson(needs.prepare-matrix.outputs.app_list) }}
+    outputs:
+      summary: ${{ steps.summary.outputs.summary }}
     steps:
-      - name: Checkout ${{ matrix.app }} repository
+      - name: Checkout ${{ matrix.org }}/${{ matrix.repo }} repository
         uses: actions/checkout@v4
         with:
-          repository: shurikg/${{ matrix.app }}
-          path: ${{ matrix.app }}
-      - name: Echo app name
-        run: echo "Checked out ${{ matrix.app }}"
+          repository: ${{ matrix.org }}/${{ matrix.repo }}
+          path: ${{ matrix.repo }}
+      - name: Echo app and org
+        run: echo "Checked out ${{ matrix.org }}/${{ matrix.repo }}"
+      - name: Save repo/org info for summary
+        run: |
+          echo "| ${{ matrix.org }} | ${{ matrix.repo }} |" >> repos.txt
+      - name: Upload summary artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: repos-summary
+          path: repos.txt
+
+  summary-table:
+    needs: echo-matrix
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download summary artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: repos-summary
+      - name: Print summary table
+        run: |
+          echo "### Repository Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| Org | Repo |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|------|" >> $GITHUB_STEP_SUMMARY
+          cat repos.txt >> $GITHUB_STEP_SUMMARY
