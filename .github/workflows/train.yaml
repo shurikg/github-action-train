@@ -32,7 +32,8 @@ jobs:
           path: ${{ matrix.repo }}
       - name: Echo app and org
         run: echo "Checked out ${{ matrix.org }}/${{ matrix.repo }}"
-
+      - name: list files
+        run: ls -la ${{ matrix.repo }}
       - name: Save summary info
         run: echo "| ${{ matrix.org }} | ${{ matrix.repo }} |" > summary.txt
       - name: Test
