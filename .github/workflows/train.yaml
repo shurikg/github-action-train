@@ -35,6 +35,8 @@ jobs:
 
       - name: Save summary info
         run: echo "| ${{ matrix.org }} | ${{ matrix.repo }} |" > summary.txt
+      - name: Test
+        run: echo "# AAA ${{ matrix.repo }}" >> $GITHUB_STEP_SUMMARY
       - name: Upload summary artifact
         uses: actions/upload-artifact@v4
         with:
