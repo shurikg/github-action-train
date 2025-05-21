@@ -32,12 +32,13 @@ jobs:
           path: ${{ matrix.repo }}
       - name: Echo app and org
         run: echo "Checked out ${{ matrix.org }}/${{ matrix.repo }}"
+
       - name: Save summary info
-        run: echo "| ${{ matrix.org }} | ${{ matrix.app }} |" > summary.txt
+        run: echo "| ${{ matrix.org }} | ${{ matrix.repo }} |" > summary.txt
       - name: Upload summary artifact
         uses: actions/upload-artifact@v4
         with:
-          name: summary-${{ matrix.app }}
+          name: summary-${{ matrix.repo }}
           path: summary.txt
 
   summary-table:
